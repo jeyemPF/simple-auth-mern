@@ -1,49 +1,34 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-export default function SignUp() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+function SignUp() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here you can add your registration logic
-    console.log(formData);
-    // Reset the form after submission
-    setFormData({
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
-    });
-  };
+ const handleSubmit = (e) => {
+   e.preventDefault();
+   axios.post('http://localhost:3001/register', { name, email, password: password })
+   .then(result => console.log(result))
+   .catch(error => console.log(error));
+ }
 
   return (
     <div className="container">
-      <h2>Sign Up</h2>
+      <h2>Register</h2>
+      
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label htmlFor="username" className="form-label">Username</label>
+          <label htmlFor="name" className="form-label">Name</label>
           <input 
             type="text" 
             className="form-control" 
-            id="username" 
-            name="username" 
-            value={formData.username} 
-            onChange={handleChange} 
-            required 
-          />
+            id="name" value={name} 
+            onChange={(e) => setName(e.target.value)} 
+            />
         </div>
 
         <div className="mb-3">
@@ -51,42 +36,28 @@ export default function SignUp() {
           <input 
             type="email" 
             className="form-control" 
-            id="email" 
-            name="email" 
-            value={formData.email} 
-            onChange={handleChange} 
-            required 
-          />
+            id="email" value={email} 
+            onChange={ (e) => setEmail (e.target.value)} 
+            />
         </div>
+
 
         <div className="mb-3">
           <label htmlFor="password" className="form-label">Password</label>
           <input 
             type="password" 
             className="form-control" 
-            id="password" 
-            name="password" 
-            value={formData.password} 
-            onChange={handleChange} 
-            required 
-          />
+            id="password" value={password} 
+            onChange={ (e) => setPassword (e.target.value)} 
+            />
         </div>
 
-        <div className="mb-3">
-          <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-          <input 
-            type="password" 
-            className="form-control" 
-            id="confirmPassword" 
-            name="confirmPassword" 
-            value={formData.confirmPassword} 
-            onChange={handleChange} 
-            required 
-          />
-        </div>
 
-        <button type="submit" className="btn btn-primary">Sign Up</button>
+        <button type="submit" className="btn btn-primary">Register</button>
       </form>
+      <p className="mt-3">Already have an account? <a href="/login">Login here</a></p>
     </div>
   );
 }
+
+export default SignUp;
