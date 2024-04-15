@@ -6,15 +6,18 @@ function SignUp() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
-  
+  const navigate = useNavigate(); 
 
- const handleSubmit = (e) => {
-   e.preventDefault();
-   axios.post('http://localhost:3001/register', { name, email, password: password })
-   .then(result => console.log(result))
-   .catch(error => console.log(error));
- }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = { name, email, password }; // Define formData
+    axios.post('http://localhost:3001/register', formData)
+      .then(result => {
+        console.log(result);
+        navigate('/login');
+      })
+      .catch(error => console.log(error));
+  };
 
   return (
     <div className="container">
