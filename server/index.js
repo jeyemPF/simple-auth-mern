@@ -21,22 +21,35 @@ mongoose.connect(process.env.MONGODB_URI)
 
 
 
-app.post("/login", (req, res) => {
-    const {email, password} = req.body;
-    EmployeeModel.findOne({email: email})
-    .then( user =>{
-        if (user) {
-            if (user.password === password) {
-                res.json("success");
+  app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+    EmployeeModel.findOne({ email: email })
+        .then(user => {
+            console.log(user); // Log the user object
+            if (user) {
+                if (user.password === password) {
+                    res.json({
+                        status: "success",
+                        user: {
+                            username: user.name,
+                            email: user.email,
+                            avatar: user.avatar // Ensure avatar is included in the response
+                        }
+                    });
+                } else {
+                    res.status(401).json("incorrect_password"); // Return 401 status code for incorrect password
+                }
             } else {
-                res.json("Password is incorrect");
+                res.status(404).json("not_found"); // Return 404 status code for no records found
             }
-        } else {
-            res.json("No records found");
-        }
-    })
-    
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            res.status(500).json("server_error"); // Return 500 status code for server errors
+        });
 })
+
+
 
 
 app.post("/register", (req, res) => {
@@ -44,6 +57,7 @@ app.post("/register", (req, res) => {
     .then(employees => res.json(employees)) 
     .catch(err => res.json(err))
 })
+
 
 
 app.listen(3001, () => {

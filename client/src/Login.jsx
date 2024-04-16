@@ -2,22 +2,33 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [emailError, setEmailError] = useState(''); // State for email error message
+  const [passwordError, setPasswordError] = useState(''); // State for password error message
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    axios.post('http://localhost:3001/login', { email, password })
-    .then(result => {
-      console.log(result);
-      if (result.data === 'success') {
-        navigate('/home');
-  
-   } })}
+    setEmailError('');
+    setPasswordError('');
 
+    try {
+      const result = await axios.post('http://localhost:3001/login', { email, password });
+      console.log(result);
+      if (result.data.status === 'success') {
+        const { username, email, avatar } = result.data.user; // Include avatar in destructuring
+        // Redirect to home page and pass username, email, and avatar as query parameters
+        navigate('/home', { state: { username: username, email: email, avatar: avatar } });
+      } else {
+        // Handle other cases like incorrect password or no record found
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setEmailError('An error occurred. Please try again.'); // Update email error message for general errors
+    }
+  }
 
   return (
     <div className="container">
@@ -33,6 +44,7 @@ function Login() {
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
           />
+          {emailError && <div className="text-danger">{emailError}</div>} {/* Display email error message */}
         </div>
 
         <div className="mb-3">
@@ -44,6 +56,7 @@ function Login() {
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
           />
+          {passwordError && <div className="text-danger">{passwordError}</div>} {/* Display password error message */}
         </div>
 
         <button type="submit" className="btn btn-primary">Login</button>
