@@ -20,27 +20,16 @@ mongoose.connect(process.env.MONGODB_URI)
     console.error('Error connecting to MongoDB:', error);
   });
 
-
-
 // Route to create a new desk with amenities
-app.post("/desks", async (req, res) => {
+app.get("/desks", async (req, res) => {
     try {
-        const { name, location, description, amenities } = req.body;
+        // Fetch all desks from the database
+        const desks = await Desk.find();
 
-        // Create a new desk instance
-        const newDesk = new Desk({
-            name,
-            location,
-            description,
-            amenities,
-        });
-
-        // Save the new desk to the database
-        const savedDesk = await newDesk.save();
-
-        res.status(201).json(savedDesk);
+        // Send the list of desks as a JSON response
+        res.json(desks);
     } catch (error) {
-        console.error('Error saving desk:', error);
+        console.error('Error fetching desks:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

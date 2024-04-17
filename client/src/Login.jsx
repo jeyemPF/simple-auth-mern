@@ -5,28 +5,24 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState(''); 
-  const [passwordError, setPasswordError] = useState(''); 
+  const [error, setError] = useState(''); 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setEmailError('');
-    setPasswordError('');
+    setError('');
 
     try {
       const result = await axios.post('http://localhost:3001/login', { email, password });
-      console.log(result);
       if (result.data.status === 'success') {
-        const { username, email, avatar } = result.data.user; // Include avatar in destructuring
-        // Redirect to home page and pass username, email, and avatar as query parameters
-        navigate('/home', { state: { username: username, email: email, avatar: avatar } });
+        const { username, email, avatar } = result.data.user; 
+        navigate('/home', { state: { username, email, avatar } });
       } else {
-        // Handle other cases like incorrect password or no record found
+        setError(result.data); // Display server error message
       }
     } catch (error) {
       console.error('Error:', error);
-      setEmailError('An error occurred. Please try again.'); // Update email error message for general errors
+      setError('An error occurred. Please try again.'); 
     }
   }
 
@@ -44,7 +40,6 @@ function Login() {
             value={email} 
             onChange={(e) => setEmail(e.target.value)} 
           />
-          {emailError && <div className="text-danger">{emailError}</div>} {/* Display email error message */}
         </div>
 
         <div className="mb-3">
@@ -56,7 +51,7 @@ function Login() {
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
           />
-          {passwordError && <div className="text-danger">{passwordError}</div>} {/* Display password error message */}
+          {error && <div className="text-danger">{error}</div>} {/* Display error message */}
         </div>
 
         <button type="submit" className="btn btn-primary">Login</button>
