@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const EmployeeModel = require('./models/Employee');
 const BookingModel = require('./models/Booking');
-const Desk = require('./models/Desk'); 
-
+const Desk = require('./models/Desk');
+const { v4: uuidv4 } = require('uuid'); // Import UUID library
 
 require('dotenv').config();
 
@@ -19,6 +19,32 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch((error) => {
     console.error('Error connecting to MongoDB:', error);
   });
+
+
+
+// Route to create a new desk with amenities
+app.post("/desks", async (req, res) => {
+    try {
+        const { name, location, description, amenities } = req.body;
+
+        // Create a new desk instance
+        const newDesk = new Desk({
+            name,
+            location,
+            description,
+            amenities,
+        });
+
+        // Save the new desk to the database
+        const savedDesk = await newDesk.save();
+
+        res.status(201).json(savedDesk);
+    } catch (error) {
+        console.error('Error saving desk:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -54,6 +80,7 @@ app.post("/register", (req, res) => {
     .catch(err => res.json(err));
 });
 
+// Route for booking a desk
 app.post("/book", async (req, res) => {
     try {
         const { employeeId, bookingDetails } = req.body;
@@ -63,7 +90,10 @@ app.post("/book", async (req, res) => {
             return res.status(404).json({ error: "Employee not found" });
         }
 
+        const bookingId = uuidv4(); // Generate unique booking ID
+
         const booking = new BookingModel({
+            bookingId: bookingId,
             employee: employeeId,
             date: bookingDetails.date,
             time: bookingDetails.time,
@@ -79,16 +109,20 @@ app.post("/book", async (req, res) => {
     }
 });
 
+// Route for booking a desk
 app.post("/book-desk", async (req, res) => {
     try {
         const { deskId, bookingDetails } = req.body;
 
-        const desk = await Desk.findById(deskId); // Corrected DeskModel to Desk
+        const desk = await Desk.findById(deskId);
         if (!desk) {
             return res.status(404).json({ error: "Desk not found" });
         }
 
+        const bookingId = uuidv4(); // Generate unique booking ID
+
         const booking = new BookingModel({
+            bookingId: bookingId,
             desk: deskId,
             date: bookingDetails.date,
             time: bookingDetails.time,
