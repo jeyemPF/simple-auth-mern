@@ -20,20 +20,35 @@ mongoose.connect(process.env.MONGODB_URI)
     console.error('Error connecting to MongoDB:', error);
   });
 
-// Route to create a new desk with amenities
+
+  
+// Route to fetch all desks
+// Route to fetch all desks with the number of bookings
 app.get("/desks", async (req, res) => {
     try {
-        // Fetch all desks from the database
+        // Fetch all desks
         const desks = await Desk.find();
 
-        // Send the list of desks as a JSON response
-        res.json(desks);
+        // Get the number of bookings for each desk
+        const desksWithBookings = await Promise.all(desks.map(async desk => {
+            const bookingsCount = await BookingModel.countDocuments({ desk: desk._id });
+            return {
+                _id: desk._id,
+                name: desk.name,
+                location: desk.location,
+                description: desk.description,
+                available: desk.available,
+                bookingsCount: bookingsCount
+            };
+        }));
+
+        // Send the response with desks and their bookings count
+        res.json(desksWithBookings);
     } catch (error) {
         console.error('Error fetching desks:', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
-
 
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
@@ -98,6 +113,7 @@ app.post("/book", async (req, res) => {
     }
 });
 
+
 // Route for booking a desk
 app.post("/book-desk", async (req, res) => {
     try {
@@ -118,7 +134,11 @@ app.post("/book-desk", async (req, res) => {
             // Include other booking details like duration, notes, etc. from bookingDetails
         });
 
-        await booking.save();
+        await booking.save(); // Save the booking to the database
+
+        // Update the desk availability status
+        desk.available = false;
+        await desk.save();
 
         res.json({ status: "success", booking });
     } catch (error) {

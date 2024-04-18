@@ -2,11 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 function Home() {
   const location = useLocation();
   const navigate = useNavigate();
   const [desks, setDesks] = useState([]);
+  const [selectedDesk, setSelectedDesk] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({
+    date: '',
+    time: '',
+  });
 
   useEffect(() => {
     fetchDesks();
@@ -14,7 +22,7 @@ function Home() {
 
   const fetchDesks = async () => {
     try {
-      const response = await fetch('http://localhost:3001/desks'); // Change the URL accordingly
+      const response = await fetch('http://localhost:3001/desks');
       if (response.ok) {
         const data = await response.json();
         setDesks(data);
@@ -41,6 +49,48 @@ function Home() {
     navigate('/login');
   };
 
+  const handleBookDesk = (desk) => {
+    setSelectedDesk(desk);
+    setShowModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setBookingDetails({
+      date: '',
+      time: '',
+    });
+  };
+
+  const handleBookingConfirm = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/book-desk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          deskId: selectedDesk._id,
+          bookingDetails,
+        }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Booking successful:', data);
+        // Update UI to reflect booking status (optional)
+      } else {
+        console.error('Booking failed');
+      }
+    } catch (error) {
+      console.error('Error booking desk:', error);
+    }
+    setShowModal(false);
+    setBookingDetails({
+      date: '',
+      time: '',
+    });
+  };
+
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -59,13 +109,65 @@ function Home() {
         />
       )}
       <h3>Available Desks:</h3>
-      <ul>
-        {desks.map(desk => (
-          <li key={desk._id}>{desk.name} - {desk.location}</li>
+      <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {desks.map((desk) => (
+          <div key={desk._id} className="col">
+            <div className="card" onClick={() => handleBookDesk(desk)} style={{ cursor: 'pointer' }}>
+              <div className="card-body">
+                <h5 className="card-title">{desk.name}</h5>
+                <p className="card-text">Location: {desk.location}</p>
+                <p className="card-text">Available: {desk.available ? 'Yes' : 'No'}</p>
+                <p className="card-text">Bookings: {desk.bookingsCount}</p>
+              </div>
+            </div>
+          </div>
         ))}
-      </ul>
+      </div>
+
+      <Modal show={showModal} onHide={handleModalClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Book Desk</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <form>
+            <div className="mb-3">
+              <label htmlFor="date" className="form-label">
+                Date
+              </label>
+              <input
+                type="date"
+                className="form-control"
+                id="date"
+                value={bookingDetails.date}
+                onChange={(e) => setBookingDetails({ ...bookingDetails, date: e.target.value })}
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="time" className="form-label">
+                Time
+              </label>
+              <input
+                type="time"
+                className="form-control"
+                id="time"
+                value={bookingDetails.time}
+                onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
+              />
+            </div>
+          </form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleModalClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleBookingConfirm}>
+            Confirm Booking
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
+
 
 export default Home;
