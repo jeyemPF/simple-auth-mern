@@ -1,9 +1,11 @@
+// client/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import BookingHistory from './BookingHistory'; // Import BookingHistory component
 
 function Home() {
   const location = useLocation();
@@ -40,7 +42,7 @@ function Home() {
     return null;
   }
 
-  const { username, email, avatar } = location.state;
+  const { username, email, avatar, userId } = location.state; // Extract userId from location state
 
   const handleLogout = () => {
     // Clear token from localStorage
@@ -165,9 +167,11 @@ function Home() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Pass userId to BookingHistory component */}
+      <BookingHistory userId={userId} />
     </div>
   );
 }
-
 
 export default Home;
