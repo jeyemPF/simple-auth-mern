@@ -5,6 +5,7 @@
     const BookingModel = require('./models/Booking');
     const Desk = require('./models/Desk');
     const { v4: uuidv4 } = require('uuid'); // Import UUID library
+    const BookingHistory = require('./models/BookingHistory');
 
     require('dotenv').config();
 
@@ -118,14 +119,14 @@
     app.post("/book-desk", async (req, res) => {
         try {
             const { deskId, bookingDetails } = req.body;
-
+    
             const desk = await Desk.findById(deskId);
             if (!desk) {
                 return res.status(404).json({ error: "Desk not found" });
             }
-
+    
             const bookingId = uuidv4(); // Generate unique booking ID
-
+    
             const booking = new BookingModel({
                 bookingId: bookingId,
                 desk: deskId,
@@ -133,19 +134,33 @@
                 time: bookingDetails.time,
                 // Include other booking details like duration, notes, etc. from bookingDetails
             });
-
+    
             await booking.save(); // Save the booking to the database
-
+    
             // Update the desk availability status
             desk.available = false;
             await desk.save();
-
+    
             res.json({ status: "success", booking });
         } catch (error) {
             console.error('Error:', error);
             res.status(500).json({ error: "Server error" });
         }
     });
+
+// Backend code
+app.get("/booking-history/:userId", async (req, res) => {
+    try {
+        const employeeId = req.params.userId;
+        const bookingHistory = await BookingHistory.find({ employeeId }).populate('deskId');
+        res.json(bookingHistory);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 
     app.listen(3001, () => {
         console.log("Server is running on port 3001");
