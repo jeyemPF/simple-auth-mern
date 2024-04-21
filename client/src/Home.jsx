@@ -1,4 +1,3 @@
-// client/Home.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -156,7 +155,7 @@ function Home() {
                 onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
               />
             </div>
-          </form>
+          </form> 
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleModalClose}>
@@ -169,7 +168,9 @@ function Home() {
       </Modal>
 
       {/* Pass userId to BookingHistory component */}
-      <BookingHistory userId={userId} />
+      {userId && <BookingHistory employeeId={userId} />}
+
+
     </div>
   );
 }

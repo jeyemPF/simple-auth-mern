@@ -149,10 +149,24 @@
     });
 
 // Backend code
-app.get("/booking-history/:userId", async (req, res) => {
+app.get("/booking-history/:employeeId", async (req, res) => {
     try {
-        const employeeId = req.params.userId;
+        const employeeId = req.params.employeeId;
+
+        // Check if the provided employeeId is valid
+        if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+            return res.status(400).json({ error: "Invalid employeeId" });
+        }
+
+        // Find booking history records for the specified employee
         const bookingHistory = await BookingHistory.find({ employeeId }).populate('deskId');
+
+        // If no booking history records are found, return a message
+        if (!bookingHistory || bookingHistory.length === 0) {
+            return res.status(404).json({ message: "No booking history found for the specified employee" });
+        }
+
+        // If booking history records are found, return them
         res.json(bookingHistory);
     } catch (error) {
         console.error('Error:', error);

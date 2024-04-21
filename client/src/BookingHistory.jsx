@@ -9,7 +9,7 @@ function BookingHistory({ employeeId }) {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/bookings/${employeeId}`);
+      const response = await fetch(`http://localhost:3001/booking-history/${employeeId}`);
       if (response.ok) {
         const data = await response.json();
         setBookings(data);
@@ -36,8 +36,6 @@ function BookingHistory({ employeeId }) {
           {bookings.map((booking) => (
             <tr key={booking._id}>
               <td>{booking.desk.name}</td>
-              <td>{new Date(booking.date).toLocaleDateString()}</td>
-              <td>{booking.time}</td>
             </tr>
           ))}
         </tbody>
