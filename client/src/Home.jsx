@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt, faCheckCircle } from '@fortawesome/free-solid-svg-icons'; // Import faCheckCircle icon
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import BookingHistory from './BookingHistory'; // Import BookingHistory component
@@ -15,6 +15,7 @@ function Home() {
   const [bookingDetails, setBookingDetails] = useState({
     date: '',
     time: '',
+    bookingSuccess: false // State to track booking success
   });
 
   useEffect(() => {
@@ -60,6 +61,7 @@ function Home() {
     setBookingDetails({
       date: '',
       time: '',
+      bookingSuccess: false // Reset booking success state when modal closes
     });
   };
 
@@ -78,20 +80,15 @@ function Home() {
       if (response.ok) {
         const data = await response.json();
         console.log('Booking successful:', data);
-        // Update UI to reflect booking status (optional)
+        setBookingDetails({ ...bookingDetails, bookingSuccess: true }); // Set booking success state to true
+        handleModalClose(); // Close the modal after successful booking
       } else {
         console.error('Booking failed');
       }
     } catch (error) {
       console.error('Error booking desk:', error);
     }
-    setShowModal(false);
-    setBookingDetails({
-      date: '',
-      time: '',
-    });
   };
-
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -155,7 +152,7 @@ function Home() {
                 onChange={(e) => setBookingDetails({ ...bookingDetails, time: e.target.value })}
               />
             </div>
-          </form> 
+          </form>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleModalClose}>
@@ -167,9 +164,16 @@ function Home() {
         </Modal.Footer>
       </Modal>
 
+      {/* Display green checkmark icon when booking is successful */}
+      {bookingDetails.bookingSuccess && (
+        <div className="text-center mt-3">
+          <FontAwesomeIcon icon={faCheckCircle} size="3x" color="green" />
+          <p className="mt-2">Booking Successful!</p>
+        </div>
+      )}
+
       {/* Pass userId to BookingHistory component */}
       {userId && <BookingHistory employeeId={userId} />}
-
 
     </div>
   );
